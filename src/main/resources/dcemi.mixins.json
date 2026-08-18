@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "client": [
+    "MixinTitleScreen",
+    "MixinGameRenderer",
+    "MixinLevelRenderer",
+    "MixinSoundEngine"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
