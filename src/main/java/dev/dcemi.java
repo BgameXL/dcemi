@@ -1,6 +1,7 @@
 package dev;
 
-import dev.command.ConsoleCommandHandler;
+import dev.command.Consolehandler;
+import dev.runtime.Signal;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -16,6 +17,7 @@ public class dcemi {
     }
 
     private void clientside(FMLClientSetupEvent event) {
-        ConsoleCommandHandler.start();
+        Consolehandler.start();
+        Signal.register();
     }
 }
