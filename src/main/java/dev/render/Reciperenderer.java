@@ -10,6 +10,7 @@ import dev.emi.emi.api.recipe.EmiRecipe;
 import dev.emi.emi.api.widget.Widget;
 import dev.emi.emi.api.widget.WidgetHolder;
 import dev.emi.emi.widget.RecipeBackground;
+import dev.runtime.Channel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.GuiGraphics;
@@ -20,7 +21,6 @@ import org.joml.Matrix4f;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,9 +29,9 @@ public class Reciperenderer {
 
     private static final int PADDING = 8;
 
-    public static void execute(String args) {
+    public static void execute(String args, Channel channel) {
         if (args.isEmpty()) {
-            writerror("Usage: /render <recipe_id>");
+            writerror(channel, "Usage: /render <recipe_id>");
             return;
         }
 
@@ -39,21 +39,21 @@ public class Reciperenderer {
         try {
             recipeId = new ResourceLocation(args.trim());
         } catch (Exception e) {
-            writerror("Invalid resource location: " + args);
+            writerror(channel, "Invalid resource location: " + args);
             return;
         }
 
         EmiRecipe recipe = EmiApi.getRecipeManager().getRecipe(recipeId);
 
         if (recipe == null) {
-            writerror("Recipe not found: " + args);
+            writerror(channel, "Recipe not found: " + args);
             return;
         }
 
-        renderR(recipe);
+        renderR(recipe, channel);
     }
 
-    private static void renderR(EmiRecipe recipe) {
+    private static void renderR(EmiRecipe recipe, Channel channel) {
         Minecraft mc = Minecraft.getInstance();
         int width = recipe.getDisplayWidth() + PADDING * 2;
         int height = recipe.getDisplayHeight() + PADDING * 2;
@@ -92,45 +92,27 @@ public class Reciperenderer {
         RenderSystem.applyModelViewMatrix();
         fbo.unbindWrite();
 
-        writefbopng(fbo);
+        writefbopng(fbo, channel);
         fbo.destroyBuffers();
     }
 
-    private static void writefbopng(RenderTarget fbo) {
+    private static void writefbopng(RenderTarget fbo, Channel channel) {
         try (NativeImage img = Screenshot.takeScreenshot(fbo)) {
             byte[] png = img.asByteArray();
 
-            // --- temporary dev-aid: also dump to <gameDir>/dcemi_last.png so the
-            //     render can be eyeballed without capturing the binary stdout.
-            //     Remove once the Python harness is verified.
             try {
                 img.writeToFile(new File(Minecraft.getInstance().gameDirectory, "dcemi_last.png"));
             } catch (IOException ignored) {
             }
 
-            OutputStream out = System.out;
-            int len = png.length;
-            out.write((len >>> 24) & 0xFF);
-            out.write((len >>> 16) & 0xFF);
-            out.write((len >>> 8) & 0xFF);
-            out.write(len & 0xFF);
-            out.write(png);
-            out.flush();
+            channel.writeFrame(png);
         } catch (IOException e) {
             System.err.println("[DCEMI] PNG write failed: " + e.getMessage());
         }
     }
 
-    private static void writerror(String msg) {
-        try {
-            OutputStream out = System.out;
-            out.write(0);
-            out.write(0);
-            out.write(0);
-            out.write(0);
-            out.flush();
-        } catch (IOException ignored) {
-        }
+    private static void writerror(Channel channel, String msg) {
+        channel.writeErrorFrame();
         System.err.println("[DCEMI] " + msg);
     }
 

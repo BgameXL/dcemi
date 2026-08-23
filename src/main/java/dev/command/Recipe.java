@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import dev.emi.emi.api.EmiApi;
 import dev.emi.emi.api.recipe.EmiRecipe;
 import dev.emi.emi.api.stack.EmiStack;
+import dev.runtime.Channel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -15,10 +16,9 @@ public class Recipe {
 
     private static final Gson GSON = new Gson();
 
-    public static void execute(String args) {
+    public static void execute(String args, Channel channel) {
         if (args.isEmpty()) {
-            System.out.println("{\"error\":\"Usage: /recipe <item_id> [uses]\"}");
-            System.out.flush();
+            channel.writeLine("{\"error\":\"Usage: /recipe <item_id> [uses]\"}");
             return;
         }
 
@@ -30,8 +30,7 @@ public class Recipe {
         try {
             loc = new ResourceLocation(itemId);
         } catch (Exception e) {
-            System.out.println("{\"error\":\"Invalid resource location: " + itemId + "\"}");
-            System.out.flush();
+            channel.writeLine("{\"error\":\"Invalid resource location: " + itemId + "\"}");
             return;
         }
 
@@ -41,8 +40,7 @@ public class Recipe {
                 .orElse(null);
 
         if (target == null) {
-            System.out.println("{\"error\":\"Item not found in EMI index: " + itemId + "\"}");
-            System.out.flush();
+            channel.writeLine("{\"error\":\"Item not found in EMI index: " + itemId + "\"}");
             return;
         }
 
@@ -58,7 +56,6 @@ public class Recipe {
                 .map(r -> r.getId().toString())
                 .toList();
 
-        System.out.println(GSON.toJson(ids));
-        System.out.flush();
+        channel.writeLine(GSON.toJson(ids));
     }
 }

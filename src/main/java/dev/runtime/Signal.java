@@ -22,6 +22,9 @@ public class Signal {
         if (signaled || event.phase != TickEvent.Phase.END) return;
         if (EmiReloadManager.isLoaded() && !EmiApi.getIndexStacks().isEmpty()) {
             signaled = true;
+            // Open the command socket only now, so a successful connection means
+            // the index is ready and commands can be served immediately.
+            CommandServer.start();
             System.err.println("DCEMI_READY");
             System.err.flush();
         }

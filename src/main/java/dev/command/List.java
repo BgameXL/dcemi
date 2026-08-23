@@ -3,6 +3,7 @@ package dev.command;
 import com.google.gson.Gson;
 import dev.emi.emi.api.EmiApi;
 import dev.emi.emi.api.stack.EmiStack;
+import dev.runtime.Channel;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -11,7 +12,7 @@ public class List {
 
     private static final Gson GSON = new Gson();
 
-    public static void execute(String args) {
+    public static void execute(String args, Channel channel) {
         java.util.List<EmiStack> stacks = EmiApi.getIndexStacks();
 
         java.util.List<String> names = stacks.stream()
@@ -22,7 +23,6 @@ public class List {
                 .distinct()
                 .toList();
 
-        System.out.println(GSON.toJson(names));
-        System.out.flush();
+        channel.writeLine(GSON.toJson(names));
     }
 }

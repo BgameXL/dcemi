@@ -1,6 +1,5 @@
 package dev;
 
-import dev.command.Consolehandler;
 import dev.runtime.Signal;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -17,7 +16,7 @@ public class dcemi {
     }
 
     private void clientside(FMLClientSetupEvent event) {
-        Consolehandler.start();
+        // The command socket is opened by Signal once EMI's index is ready.
         Signal.register();
     }
 }
