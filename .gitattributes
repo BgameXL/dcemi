@@ -1,0 +1,5 @@
+gradlew        text eol=lf
+*.sh           text eol=lf
+
+# windows batch
+gradlew.bat    text eol=crlf

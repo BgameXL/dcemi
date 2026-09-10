@@ -18,7 +18,7 @@ your code --TCP :25599 -> headless Minecraft (Docker, GL) -> PNG bytes
 **1. Build the portable image**:
 
 ```bash
-docker build -f docker/Dockerfile.portable -t dcemi:latest .
+docker build -f docker/Dockerfile.portable -t dcemi:latest
 ```
 
 **2. Run it**: the `-t` is obligatory, without a TTY, Minecraft stdout is

@@ -20,6 +20,7 @@ RUN printf 'pcm.!default { type null }\nctl.!default { type null }\n' > /etc/aso
 
 WORKDIR /app
 COPY gradlew /app/
+RUN sed -i 's/\r$//' gradlew && chmod +x gradlew
 COPY gradle /app/gradle
 COPY settings.gradle build.gradle gradle.properties /app/
 RUN ./gradlew --no-daemon --version
@@ -27,7 +28,7 @@ RUN ./gradlew --no-daemon --version
 COPY src /app/src
 RUN ./gradlew --no-daemon build prepareRunClient
 COPY docker/entrypoint.sh /usr/local/bin/dcemi-entrypoint
-RUN chmod +x /usr/local/bin/dcemi-entrypoint
+RUN sed -i 's/\r$//' /usr/local/bin/dcemi-entrypoint && chmod +x /usr/local/bin/dcemi-entrypoint
 
 EXPOSE 25599
 ENTRYPOINT ["/usr/local/bin/dcemi-entrypoint"]
