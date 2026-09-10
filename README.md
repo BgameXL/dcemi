@@ -120,15 +120,11 @@ Config via env vars: `DCEMI_PORT`, `DCEMI_BIND`, `DCEMI_SCALE`.
 
 ## Using in the Discord bot
 
-The Discord extension has its own repo: **[dcemibot](https://github.com/driftbluestone/dcemibot)**, 
+The Discord extension has its own repo: **[dcemibot](https://github.com/BgameXL/dcemibot)**, 
 a [Sonny](https://github.com/driftbluestone/sonny) extension that adds `/recipe`,
 `/list` and `/render` slash commands.
 
-```
-/extension add https://github.com/driftbluestone/dcemibot
-```
-
-See that repo for setup. It still needs a DCEMI renderer running.
+See that repo for setup, it still needs the DCEMI renderer running.
 
 ---
 
