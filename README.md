@@ -120,11 +120,15 @@ Config via env vars: `DCEMI_PORT`, `DCEMI_BIND`, `DCEMI_SCALE`.
 
 ## Using in the Discord bot
 
-The bot is a [Sonny](https://github.com/driftbluestone/sonny) extension at
-`tagbot/extensions/dcemi/`. It gives three slash command. Because it runs
-inside Sonny, standing it up also requires Sonny's own dependencies.
+The Discord extension has its own repo: **[dcemibot](https://github.com/driftbluestone/dcemibot)**, 
+a [Sonny](https://github.com/driftbluestone/sonny) extension that adds `/recipe`,
+`/list` and `/render` slash commands.
 
-**If using Sonny, you will need to follow its instructions**
+```
+/extension add https://github.com/driftbluestone/dcemibot
+```
+
+See that repo for setup. It still needs a DCEMI renderer running.
 
 ---
 
