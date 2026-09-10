@@ -26,7 +26,7 @@ public final class Channel {
 
     public synchronized void writeFrame(byte[] payload) {
         try {
-            out.writeInt(payload.length);   // writeInt is defined big-endian
+            out.writeInt(payload.length);
             out.write(payload);
             out.flush();
         } catch (IOException e) {

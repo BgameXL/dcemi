@@ -1,0 +1,33 @@
+# Self-contained, portable DCEMI image. This bakes EVERYTHING into the image at build time: Minecraft, Forge, EMI, the mod, assets and natives.
+
+#   docker build -f docker/Dockerfile.portable -t dcemi:latest
+#   docker run -d -t -p 25599:25599 --name dcemi dcemi:latest
+#   docker run -d -t --restart unless-stopped -p 25599:25599 --name dcemi dcemi:latest  # prevents the headless client from crash on long terms (almost rarely)
+
+# The build downloads ~5 GB and the final image is ~6-7 GB.
+FROM eclipse-temurin:17-jdk-jammy
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        xvfb xauth \
+        libgl1-mesa-dri libglx-mesa0 libgl1 libglu1-mesa \
+        libx11-6 libxext6 libxrender1 libxrandr2 libxcursor1 libxi6 \
+        libxxf86vm1 libxtst6 libxkbcommon0 \
+        libopenal1 \
+        ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN printf 'pcm.!default { type null }\nctl.!default { type null }\n' > /etc/asound.conf
+
+WORKDIR /app
+COPY gradlew /app/
+COPY gradle /app/gradle
+COPY settings.gradle build.gradle gradle.properties /app/
+RUN ./gradlew --no-daemon --version
+
+COPY src /app/src
+RUN ./gradlew --no-daemon build prepareRunClient
+COPY docker/entrypoint.sh /usr/local/bin/dcemi-entrypoint
+RUN chmod +x /usr/local/bin/dcemi-entrypoint
+
+EXPOSE 25599
+ENTRYPOINT ["/usr/local/bin/dcemi-entrypoint"]

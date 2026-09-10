@@ -1,0 +1,11 @@
+.git
+.gradle
+build
+run
+run-data
+harness
+dist
+docker-compose.yml
+.idea
+*.iml
+*.md

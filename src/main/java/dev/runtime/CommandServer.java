@@ -2,6 +2,8 @@ package dev.runtime;
 
 import dev.command.List;
 import dev.command.Recipe;
+import dev.emi.emi.api.EmiApi;
+import dev.emi.emi.runtime.EmiReloadManager;
 import dev.render.Reciperenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
@@ -22,7 +24,8 @@ public final class CommandServer {
     private static final int DEFAULT_PORT = 25599;
     private static final AtomicBoolean running = new AtomicBoolean(false);
 
-    private CommandServer() {}
+    private CommandServer() {
+    }
 
     public static void start() {
         if (running.getAndSet(true)) return;
@@ -35,6 +38,7 @@ public final class CommandServer {
 
     private static void serve(String bind, int port) {
         try (ServerSocket server = new ServerSocket()) {
+            server.setReuseAddress(true);
             server.bind(new InetSocketAddress(bind, port));
             System.err.println("[DCEMI] command server listening on " + bind + ":" + port);
             while (true) {
@@ -43,6 +47,10 @@ public final class CommandServer {
                 conn.setDaemon(true);
                 conn.start();
             }
+        } catch (java.net.BindException e) {
+            System.err.println("[DCEMI] port " + port + " already in use another game instance is"
+                    + " still running. Kill it (fuser -k " + port + "/tcp) and relaunch. No socket this run.");
+            running.set(false);
         } catch (Exception e) {
             System.err.println("[DCEMI] command server stopped: " + e.getMessage());
             running.set(false);
@@ -79,12 +87,39 @@ public final class CommandServer {
         String[] parts = line.split(" ", 2);
         String cmd = parts[0].toLowerCase();
         String args = parts.length > 1 ? parts[1].trim() : "";
+        boolean binary = cmd.equals("/render");
 
-        switch (cmd) {
-            case "/list" -> List.execute(args, channel);
-            case "/recipe" -> Recipe.execute(args, channel);
-            case "/render" -> Reciperenderer.execute(args, channel);
-            default -> channel.writeLine("{\"error\":\"Unknown command: " + cmd + "\"}");
+        if (!emiReady()) {
+            respondError(channel, binary, "not ready: no world loaded / EMI index cleared");
+            return;
+        }
+
+        try {
+            switch (cmd) {
+                case "/list" -> List.execute(args, channel);
+                case "/recipe" -> Recipe.execute(args, channel);
+                case "/render" -> Reciperenderer.execute(args, channel);
+                default -> channel.writeLine("{\"error\":\"Unknown command: " + cmd + "\"}");
+            }
+        } catch (Throwable t) {
+            System.err.println("[DCEMI] command '" + cmd + "' failed: " + t);
+            respondError(channel, binary, t.toString());
+        }
+    }
+
+    private static boolean emiReady() {
+        try {
+            return EmiReloadManager.isLoaded() && !EmiApi.getIndexStacks().isEmpty();
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    private static void respondError(Channel channel, boolean binary, String msg) {
+        if (binary) {
+            channel.writeErrorFrame();
+        } else {
+            channel.writeLine("{\"error\":\"" + msg.replace('"', '\'') + "\"}");
         }
     }
 
@@ -95,7 +130,8 @@ public final class CommandServer {
         if (env != null) {
             try {
                 return Integer.parseInt(env.trim());
-            } catch (NumberFormatException ignored) {}
+            } catch (NumberFormatException ignored) {
+            }
         }
         return DEFAULT_PORT;
     }

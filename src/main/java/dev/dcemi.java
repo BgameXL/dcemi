@@ -16,7 +16,6 @@ public class dcemi {
     }
 
     private void clientside(FMLClientSetupEvent event) {
-        // The command socket is opened by Signal once EMI's index is ready.
         Signal.register();
     }
 }

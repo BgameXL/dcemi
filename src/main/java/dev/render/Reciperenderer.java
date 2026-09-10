@@ -29,6 +29,8 @@ public class Reciperenderer {
 
     private static final int PADDING = 8;
 
+    private static final int DEFAULT_SCALE = 4;
+
     public static void execute(String args, Channel channel) {
         if (args.isEmpty()) {
             writerror(channel, "Usage: /render <recipe_id>");
@@ -57,8 +59,8 @@ public class Reciperenderer {
         Minecraft mc = Minecraft.getInstance();
         int width = recipe.getDisplayWidth() + PADDING * 2;
         int height = recipe.getDisplayHeight() + PADDING * 2;
-
-        RenderTarget fbo = new TextureTarget(width, height, true, Minecraft.ON_OSX);
+        int scale = scale();
+        RenderTarget fbo = new TextureTarget(width * scale, height * scale, true, Minecraft.ON_OSX);
         fbo.setClearColor(0.15f, 0.15f, 0.15f, 1.0f);
         fbo.clear(Minecraft.ON_OSX);
         fbo.bindWrite(true);
@@ -83,7 +85,7 @@ public class Reciperenderer {
         graphics.pose().translate(PADDING, PADDING, 0);
         float partialTick = mc.getFrameTime();
         for (Widget w : holder.widgets) {
-            w.render(graphics, 0, 0, partialTick);
+            w.render(graphics, -1000, -1000, partialTick);
         }
         graphics.pose().popPose();
         graphics.flush();
@@ -101,7 +103,7 @@ public class Reciperenderer {
             byte[] png = img.asByteArray();
 
             try {
-                img.writeToFile(new File(Minecraft.getInstance().gameDirectory, "dcemi_last.png"));
+                img.writeToFile(new File(Minecraft.getInstance().gameDirectory, ""));
             } catch (IOException ignored) {
             }
 
@@ -114,6 +116,23 @@ public class Reciperenderer {
     private static void writerror(Channel channel, String msg) {
         channel.writeErrorFrame();
         System.err.println("[DCEMI] " + msg);
+    }
+
+    private static int scale() {
+        Integer sys = Integer.getInteger("dcemi.scale");
+        if (sys != null) return clampScale(sys);
+        String env = System.getenv("DCEMI_SCALE");
+        if (env != null) {
+            try {
+                return clampScale(Integer.parseInt(env.trim()));
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return DEFAULT_SCALE;
+    }
+
+    private static int clampScale(int v) {
+        return Math.max(1, Math.min(v, 16));
     }
 
     private static class widgetHolder implements WidgetHolder {

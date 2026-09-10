@@ -1,0 +1,24 @@
+# Dev setup. The image is just JDK + Xvfb + GL.
+
+#   docker compose up --build  # launch the headless client
+#   (wait for "[DCEMI] command server listening" / "DCEMI_READY")
+#   python3 harness/dcemi_client.py  # from the host, connects to localhost:25599
+services:
+  dcemi:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: dcemi:dev
+    user: "1000:1000"
+    tty: true
+    stdin_open: true
+    working_dir: /home/bgame/IdeaProjects/dcemi
+    environment:
+      HOME: /home/bgame
+      DCEMI_PORT: "25599"
+      DCEMI_BIND: "0.0.0.0"
+    volumes:
+      - /home/bgame/.gradle:/home/bgame/.gradle
+      - /home/bgame/IdeaProjects/dcemi:/home/bgame/IdeaProjects/dcemi
+    ports:
+      - "25599:25599"

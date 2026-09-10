@@ -2,6 +2,7 @@ package dev.runtime;
 
 import dev.emi.emi.api.EmiApi;
 import dev.emi.emi.runtime.EmiReloadManager;
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
@@ -19,11 +20,14 @@ public class Signal {
 
     @SubscribeEvent
     public void onclientTick(TickEvent.ClientTickEvent event) {
-        if (signaled || event.phase != TickEvent.Phase.END) return;
-        if (EmiReloadManager.isLoaded() && !EmiApi.getIndexStacks().isEmpty()) {
+        if (event.phase != TickEvent.Phase.END) return;
+
+        boolean ready = Minecraft.getInstance().level != null
+                && EmiReloadManager.isLoaded() && !EmiApi.getIndexStacks().isEmpty();
+        DcemiState.RENDER_MODE = ready;
+        if (ready && !signaled) {
             signaled = true;
-            // Open the command socket only now, so a successful connection means
-            // the index is ready and commands can be served immediately.
+
             CommandServer.start();
             System.err.println("DCEMI_READY");
             System.err.flush();
